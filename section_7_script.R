@@ -193,8 +193,37 @@ modelsummary::modelsummary(
                        extra_css = "border-bottom: 1.5px solid") |> 
   kableExtra::row_spec(32, extra_css = "border-bottom: 1.5px solid")
 
-modelsummary::mo
 
+# ST・J検定統計量自体は、正しい数値を得られていることを確認
+summary( iv_robust(f_rw ~ f_prot | kmwittenberg, 
+                   se_type = "stata", data = data713,
+                   diagnostics = TRUE))
+
+summary(iv_robust(f_rw ~ 
+                    + f_young + f_jew + f_fem + f_ortsgeb
+                  + f_pruss + hhsize + lnpop + gpop
+                  + f_blind + f_deaf + f_dumb + f_miss
+                  + f_prot |
+                    + f_young + f_jew + f_fem + f_ortsgeb
+                  + f_pruss + hhsize
+                  + lnpop + gpop + f_blind + f_deaf
+                  + f_dumb + f_miss
+                  + kmwittenberg,
+                  se_type = "stata", data = data713,
+                  diagnostics = TRUE))
+
+summary(iv_robust(f_rw ~ 
+                    + f_young + f_jew + f_fem + f_ortsgeb
+                  + f_pruss + hhsize + lnpop + gpop
+                  + f_blind + f_deaf + f_dumb + f_miss
+                  + f_prot |
+                    + f_young + f_jew + f_fem + f_ortsgeb
+                  + f_pruss + hhsize + lnpop + gpop
+                  + f_blind + f_deaf + f_dumb + f_miss
+                  + kmwittenberg + kmwittenberg:lnpop
+                  + kmwittenberg:gpop,
+                  se_type = "stata", data = data713,
+                  diagnostics = TRUE))
 
 
 
