@@ -146,29 +146,60 @@ attr(models_73$`(4)`, "ST") <- TRUE
 attr(models_73$`(6)`, "ST") <- TRUE
 attr(models_73$`(6)`, "J") <- TRUE
 
+# glance.iv_robust <- function(x) {
+#   if(!isTRUE(attr(x, "ST"))) return(NULL)
+#   ST <- summary(x)$diagnostic_first_stage_fstatistic
+#   out <- tibble("ST_test" = ST["value"],
+#                 "adj.r.squared" = "")
+#   
+#   if(isTRUE(attr(x, "J"))) {
+#     j <- summary(x)$diagnostic_overid_test
+#     out <- out |> 
+#       mutate("J_test" = j["value"],
+#              "p_value" = sprintf("(%.3f)", j["p.value"]))
+#   }
+#   return(out)
+# }
+
 glance.iv_robust <- function(x) {
-  if(!isTRUE(attr(x, "ST"))) return(NULL)
-  ST <- summary(x)$diagnostic_first_stage_fstatistic
-  out <- tibble("ST_test" = ST["value"],
-                "adj.r.squared" = "")
+  if(isTRUE(attr(x, "ST"))) {
+    ST <- summary(x)$diagnostic_first_stage_fstatistic
+    x[["ST_test"]] <- ST["value"]
+    x[["adj.r.squared"]] <- "-"
+  } else {
+    x[["ST_test"]] <- "-"
+  }
   
   if(isTRUE(attr(x, "J"))) {
     j <- summary(x)$diagnostic_overid_test
-    out <- out |> 
-      mutate("J_test" = j["value"],
-             "p_value" = sprintf("(%.3f)", j["p.value"]))
+    x[["j_test"]] <- j["value"]
+    x[["p_value"]] <- sprintf("(%.3f)", j["p.value"])
+  } else {
+    x[["j_test"]] <- "-"
   }
+  out <- tibble(
+    "staiger_stock_test" = x[["ST_test"]],
+    "adj.r.squared" = x[["adj.r.squared"]],
+    "j_test" = x[["j_test"]],
+    "p_value" = x[["p_value"]])
   return(out)
 }
 
-# ST統計値、J統計値、P値の表への出力が未完了
-# lapply(models_73, glance.iv_robust)
-# attr(models_73$`(2)`, "ST_test") <- glance.iv_robust(models_73$`(2)`)
+for(nm in names(models_73)) {
+  models_73[[nm]]["staiger_stock_test"] <- 
+    glance.iv_robust(models_73[[nm]])["staiger_stock_test"]
+  models_73[[nm]]["adj.r.squared"] <- 
+    glance.iv_robust(models_73[[nm]])["adj.r.squared"]
+  models_73[[nm]]["j_test"] <- 
+    glance.iv_robust(models_73[[nm]])["j_test"]
+  # models_73[[nm]]["p_value"] <- 
+  #   glance.iv_robust(models_73[[nm]])["p_value"]
+}
 
 gm <- tribble(~raw, ~clean, ~fmt,
-              "ST_test", "ST検定統計量", 2,
-              "J_test", "$J$検定統計量", 3,
-              "p_value", " ", 3,
+              "staiger_stock_test", "ST検定統計量", 2,
+              "j_test", "$J$検定統計量", 3,
+              # "p_value", " ", 3,
               "adj.r.squared", "$\\bar{R}^2$", 3,
               "nobs", "サンプルサイズ", 0)
 
@@ -184,7 +215,7 @@ modelsummary::modelsummary(
   stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
   gof_map = gm,
   coef_map = cm,
-  add_rows = rows1,
+  add_rows = rows,
   estimate = "{estimate}{stars}",
   output = "kableExtra",
   notes = "* p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001"
@@ -193,6 +224,7 @@ modelsummary::modelsummary(
                        extra_css = "border-bottom: 1.5px solid") |> 
   kableExtra::row_spec(32, extra_css = "border-bottom: 1.5px solid")
 
+modelsummary::gof_map
 
 # ST・J検定統計量自体は、正しい数値を得られていることを確認
 summary( iv_robust(f_rw ~ f_prot | kmwittenberg, 
@@ -224,6 +256,5 @@ summary(iv_robust(f_rw ~
                   + kmwittenberg:gpop,
                   se_type = "stata", data = data713,
                   diagnostics = TRUE))
-
 
 
