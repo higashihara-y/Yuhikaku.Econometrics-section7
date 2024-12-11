@@ -297,39 +297,41 @@ modelsummary::msummary(
 #   # models_73[[nm]]["p_value"] <- 
 #   #   glance.iv_robust(models_73[[nm]])["p_value"]
 # }
+# 
+# gm <- tribble(~raw, ~clean, ~fmt,
+#               "staiger_stock_test", "ST検定統計量", 2,
+#               "j_test", "$J$検定統計量", 3,
+#               # "p_value", " ", 3,
+#               "adj.r.squared", "$\\bar{R}^2$", 3,
+#               "nobs", "サンプルサイズ", 0)
+# 
+# rows <- tribble(~term, ~`(1)`, ~`(2)`, ~`(3)`, ~`(4)`, ~`(5)`, ~`(6)`, 
+#                "被説明変数", "識字率", "識字率", "識字率", "識字率",
+#                "新教徒率", "識字率",
+#                "推定法", "OLS" , "2SLS" , "OLS" , "2SLS" , "OLS" , "2SLS")
+# 
+# attr(rows, 'position') <- c(1, 2)
+# 
+# modelsummary::modelsummary(
+#   models_73,
+#   stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
+#   gof_map = gm,
+#   coef_map = cm,
+#   add_rows = rows,
+#   estimate = "{estimate}{stars}",
+#   output = "kableExtra",
+#   notes = "* p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001"
+# ) |> 
+#   kableExtra::row_spec(c(0, 2, 31), 
+#                        extra_css = "border-bottom: 1.5px solid") |> 
+#   kableExtra::row_spec(32, extra_css = "border-bottom: 1.5px solid")
+# 
+# modelsummary::gof_map
 
-gm <- tribble(~raw, ~clean, ~fmt,
-              "staiger_stock_test", "ST検定統計量", 2,
-              "j_test", "$J$検定統計量", 3,
-              # "p_value", " ", 3,
-              "adj.r.squared", "$\\bar{R}^2$", 3,
-              "nobs", "サンプルサイズ", 0)
 
-rows <- tribble(~term, ~`(1)`, ~`(2)`, ~`(3)`, ~`(4)`, ~`(5)`, ~`(6)`, 
-               "被説明変数", "識字率", "識字率", "識字率", "識字率",
-               "新教徒率", "識字率",
-               "推定法", "OLS" , "2SLS" , "OLS" , "2SLS" , "OLS" , "2SLS")
 
-attr(rows, 'position') <- c(1, 2)
-
-modelsummary::modelsummary(
-  models_73,
-  stars = c("*" = 0.05, "**" = 0.01, "***" = 0.001),
-  gof_map = gm,
-  coef_map = cm,
-  add_rows = rows,
-  estimate = "{estimate}{stars}",
-  output = "kableExtra",
-  notes = "* p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001"
-) |> 
-  kableExtra::row_spec(c(0, 2, 31), 
-                       extra_css = "border-bottom: 1.5px solid") |> 
-  kableExtra::row_spec(32, extra_css = "border-bottom: 1.5px solid")
-
-modelsummary::gof_map
-
-# ST・J検定統計量自体は、正しい数値を得られていることを確認
-summary( iv_robust(f_rw ~ f_prot | kmwittenberg, 
+# ST・J検定統計量が、正しい数値を得られていることを再確認
+summary(iv_robust(f_rw ~ f_prot | kmwittenberg, 
                    se_type = "stata", data = data713,
                    diagnostics = TRUE))
 
